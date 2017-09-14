@@ -26,9 +26,9 @@ app.post('/todos', (req, res) =>{
 app.get('/todos', (req, res) =>{
   Todo.find().then( (todos) => {
     res.send({todos});
-  }, (e) => {
+  }).catch( (e) => {
     res.status(400).send(e);
-  });
+  } );
 });
 
 app.get('/todos/:id', (req, res) => {
@@ -80,7 +80,6 @@ app.patch('/todos/:id', (req, res) => {
   if(!ObjectID.isValid(id))
     return res.status(404).send();
 
-//Prepare data
 
   if( _.isBoolean(body.completed) && body.completed ){
     body.completedAt = new Date().getTime();
@@ -89,8 +88,6 @@ app.patch('/todos/:id', (req, res) => {
     body.completedAt = null;
   }
 
-//Update data
-  console.log(body);
   Todo.findByIdAndUpdate( id, { $set: body}, { new: true }).then( (doc) => {
     if(!doc)
       return res.status(404).send();
