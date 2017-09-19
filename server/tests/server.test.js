@@ -320,3 +320,29 @@ describe( 'POST /users/login', () => {
   });
 
 });
+
+describe( 'DELETE /users/me/token', () => {
+
+  it('should delete token when valid data', (done) => {
+    let token = users[0].tokens[0].token;
+
+    request(app)
+      .delete('/users/me/token')
+      .set('x-auth', token)
+      .expect(200)
+      .expect( (res) => {
+        expect(res.body).toEqual({});
+      })
+      .end( (err, res) => {
+
+        if(err)
+          return done(err);
+
+        User.findByToken(token).then( (user) => {
+          expect(user).toNotExist();
+          done();
+        }).catch( e => done(e) );
+      });
+  });
+
+});
