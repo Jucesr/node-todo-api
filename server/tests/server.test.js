@@ -274,3 +274,49 @@ describe( 'GET /users/me', () => {
     .end(done);
   });
 });
+
+describe( 'POST /users/login', () => {
+
+  it('should login when valid credentials and return token', (done) => {
+    let email = users[0].email;
+    let password = users[0].password;
+
+    request(app)
+      .post('/users/login')
+      .send({email, password})
+      .expect(200)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toExist();
+      })
+      .end( (err, res) =>{
+        if(err)
+          return done(err);
+
+        User.findById(users[0]._id).then( (user) => {
+          expect(user.tokens[1]).toInclude({
+            access: 'auth',
+            token: res.headers['x-auth']
+          });
+          done();
+        }).catch( (e) => {
+          done(e);
+        });
+      });
+  });
+
+  it('should reject invalid login', (done) => {
+    request(app)
+      .post('/users/login')
+      .send({
+        email: 'invalidemail@example.com',
+        password: 'myfakepass'
+      })
+      .expect(400)
+      .expect( (res) => {
+        expect(res.headers['x-auth']).toNotExist();
+        expect(res.body).toEqual({});
+      })
+      .end(done);
+  });
+
+});
